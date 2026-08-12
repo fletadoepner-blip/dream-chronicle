@@ -72,7 +72,7 @@ const GENERIC_BANK={
 };
 localStorage.removeItem('dream-session');
 const app=document.querySelector('#app'); let session=null, room=null, poller=null, view='home', game={queue:[],index:0,affection:{},loyalty:{}};
-const api=async(path,body)=>{const r=await fetch(path,{method:body?'POST':'GET',headers:body?{'Content-Type':'application/json'}:{},body:body?JSON.stringify(body):undefined});const data=await r.json();if(!r.ok)throw new Error(data.error||'请求失败');return data};
+const api=async(path,body)=>{const r=await fetch(path,{method:body?'POST':'GET',headers:body?{'Content-Type':'application/json'}:{},body:body?JSON.stringify(body):undefined});const raw=await r.text();let data;try{data=JSON.parse(raw)}catch{throw new Error(`服务器暂时不可用（HTTP ${r.status}）。请稍后重试`)}if(!r.ok)throw new Error(data.error||'请求失败');return data};
 const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const shell=(body,step='剧本集')=>app.innerHTML=`<div class="game"><header class="topbar"><div class="brand">梦回·群星录</div><div>${step}</div></header>${body}</div>`;
 const saveSession=()=>{};

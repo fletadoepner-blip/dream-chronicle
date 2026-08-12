@@ -17,6 +17,7 @@ function readBody(req) { return new Promise(resolve => { let raw='', tooLarge=fa
 function findPlayer(room, playerId) { return room.players.find(p => p.id === playerId); }
 
 const server = http.createServer(async (req,res) => {
+  try {
   const url = new URL(req.url, `http://${req.headers.host}`);
   if (url.pathname.startsWith('/api/')) {
     const body = req.method === 'POST' ? await readBody(req) : {};
@@ -70,6 +71,10 @@ const server = http.createServer(async (req,res) => {
   if (!filePath.startsWith(__dirname) || !fs.existsSync(filePath)) { res.writeHead(404); return res.end('Not found'); }
   const type={'.html':'text/html; charset=utf-8','.js':'application/javascript; charset=utf-8','.css':'text/css; charset=utf-8'}[path.extname(filePath)]||'application/octet-stream';
   res.writeHead(200,{'Content-Type':type,'Cache-Control':file==='index.html'?'no-cache':'public, max-age=3600','X-Content-Type-Options':'nosniff'}); fs.createReadStream(filePath).on('error',()=>{if(!res.headersSent)res.writeHead(500);res.end('Server error');}).pipe(res);
+  } catch (err) {
+    console.error('Request failed:', err);
+    if (!res.headersSent) json(res, 500, { error: '服务器内部错误，请稍后重试' });
+  }
 });
 server.keepAliveTimeout = 65_000;
 server.headersTimeout = 66_000;
