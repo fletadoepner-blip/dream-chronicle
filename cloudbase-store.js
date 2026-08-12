@@ -3,7 +3,10 @@ const crypto = require('crypto');
 function createStore() {
   const memory = new Map();
   let db = null;
-  const enabled = Boolean(process.env.CLOUDBASE_ENV_ID);
+  // Document-database access requires explicit server credentials. Cloud Run
+  // deployments without them stay on the fast in-memory path instead of
+  // waiting for an unavailable collection and returning a gateway timeout.
+  const enabled = Boolean(process.env.CLOUDBASE_ENV_ID && process.env.TCB_SECRET_ID && process.env.TCB_SECRET_KEY);
   if (enabled) {
     try {
       const cloudbase = require('@cloudbase/node-sdk');
