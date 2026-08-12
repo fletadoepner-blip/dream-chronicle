@@ -153,6 +153,7 @@ money:[
 ['两处资助',['请{n}公开比较紧急程度。','让{n}拆分资金并发动募捐。','由{n}设计分期资助，先补急缺。']],
 ['火灾重建',['请{n}建立低息周转金，助小店复业。','让{n}组织共购材料，降低成本。','由{n}核实受灾名单，防止冒领。']],
 ['新税令',['请{n}建议灾区减免、奢侈征税。','让{n}核算不同税率，避免压垮小商户。','由{n}设置期限复核，防止苛政。']]
+]
 };
 function buildGame(){let mine=room.players.find(x=>x.id===session.playerId),p=mine.points,assistants=mine.assistants.map(i=>({id:i,name:NPCS[i][0]}));game={queue:[],index:0,affection:{},loyalty:{},assistants};['power','love','money'].forEach(line=>shuffled(GENERIC_BANK[line].map((text,taskIndex)=>({text,taskIndex})),room.code+line).slice(0,p[line]).forEach(item=>game.queue.push({line,...item})));eventPage()}
 function eventOption(line,name,index,taskIndex){return EVENT_OPTIONS[line][taskIndex][1][index].replaceAll('{n}',name)}
