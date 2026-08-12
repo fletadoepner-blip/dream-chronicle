@@ -1,0 +1,6 @@
+{
+  "envId": "replace-with-cloudbase-environment-id",
+  "region": "ap-shanghai",
+  "database": "dream_rooms",
+  "collection": "rooms"
+}

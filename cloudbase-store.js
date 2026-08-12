@@ -24,17 +24,28 @@ function createStore() {
     async get(code) {
       if (memory.has(code)) return memory.get(code);
       if (!db) return null;
-      const result = await db.where({ code }).limit(1).get();
-      const room = result.data?.[0] || null;
-      if (room) memory.set(code, room);
-      return room;
+      try {
+        const result = await db.where({ code }).limit(1).get();
+        const room = result.data?.[0] || null;
+        if (room) memory.set(code, room);
+        return room;
+      } catch (err) {
+        console.warn('CloudBase read failed; using memory store:', err.message);
+        db = null;
+        return null;
+      }
     },
     async set(room) {
       memory.set(room.code, room);
       if (!db) return room;
-      const existing = await db.where({ code: room.code }).limit(1).get();
-      if (existing.data?.[0]?._id) await db.doc(existing.data[0]._id).update(clone(room));
-      else await db.add(clone(room));
+      try {
+        const existing = await db.where({ code: room.code }).limit(1).get();
+        if (existing.data?.[0]?._id) await db.doc(existing.data[0]._id).update(clone(room));
+        else await db.add(clone(room));
+      } catch (err) {
+        console.warn('CloudBase write failed; using memory store:', err.message);
+        db = null;
+      }
       return room;
     }
   };
