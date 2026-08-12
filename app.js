@@ -87,9 +87,74 @@ function lobby(){view='lobby';let mine=room.players.find(p=>p.id===session.playe
 function shuffled(items,seed){let a=[...items], n=seed.split('').reduce((x,c)=>x+c.charCodeAt(0),0);for(let i=a.length-1;i>0;i--){n=(n*9301+49297)%233280;let j=n%(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}
 function relationshipDelta(line,name,taskIndex){let skill=NPC_SKILL[name]?.[line]||8,match=(TASK_MATCH[line][taskIndex]||[]).includes(name),variance=(taskIndex%4)-1,score=skill+(match?6:0)+variance;if(score>=24)return line==='love'?[25,16]:line==='power'?[17,25]:[22,19];if(score>=19)return line==='love'?[21,13]:line==='power'?[15,22]:[20,14];if(score>=15)return line==='love'?[14,10]:line==='power'?[10,16]:[13,11];if(score>=12)return line==='love'?[10,6]:line==='power'?[8,11]:[10,7];return line==='love'?[-15,-5]:line==='power'?[-10,-15]:[-12,-7]}
 const DIMENSION_LABELS={power:['战略判断','谈判周旋','军令执行','情报辨析','秩序治理'],love:['沟通倾听','共情支持','信任修复','边界尊重','协作守护'],money:['民生调度','账目核验','贸易风控','契约公平','资源分配']};
+const EVENT_OPTIONS={
+power:[
+['军事部署',['请{n}调阅边防图，先布置最稳妥的应对。','让{n}核验急报来源，再决定是否调兵。','由{n}联络附近守军，预留增援路线。']],
+['密信研判',['请{n}比对信中暗记与旧案，先验明真伪。','让{n}追查送信人的来路，防止被人设局。','由{n}拟定两套应对方案，保留回旋余地。']],
+['外交斡旋',['请{n}提出可执行的缓冲条款，暂止争端。','让{n}分别探明两国使团的底线。','由{n}记录各方承诺，防止会后反悔。']],
+['民情处置',['请{n}走访城中百姓，厘清不安的根源。','让{n}公开说明事实，先稳住人心。','由{n}追查谣言源头，切断煽动。']],
+['盟友信任',['请{n}补问关键细节，弄清被隐瞒的缘由。','让{n}核对相关文书，避免误会扩大。','由{n}安排私下会面，给对方解释机会。']],
+['军令抉择',['请{n}查清军令出处，再决定是否执行。','让{n}先稳住各营，避免命令冲突。','由{n}准备应急布防，防止局势失控。']],
+['危险交易',['请{n}逐条审视条件，拒绝不对等承诺。','让{n}查清对方的真实筹码。','由{n}提出替代交换，避免落入陷阱。']],
+['朝堂弹劾',['请{n}整理证据与时间线，正面回应指控。','让{n}查明弹劾者的真正目的。','由{n}争取公开陈述的机会，避免私下定论。']],
+['旧案重启',['请{n}封存原始卷宗，防止证据再被篡改。','让{n}复查当年证人的口供。','由{n}比对新旧线索，找出矛盾之处。']],
+['城门危机',['请{n}派人沿官道接应，确认来人安危。','让{n}暂缓封城片刻，并加强城门核验。','由{n}准备替代联络法，防止消息中断。']],
+['边军对峙',['请{n}设立缓冲地带，阻止小冲突升级。','让{n}传递停手信号，争取谈判时间。','由{n}核查双方斥候动向，防止误判。']],
+['令牌来历',['请{n}查验令牌纹样与登记册。','让{n}走访可能接触过令牌的人。','由{n}暂不动用令牌，先布置防备。']],
+['政敌试探',['请{n}以原则回应，不急于表明最终立场。','让{n}分析对方设宴的真正诉求。','由{n}准备可公开的说辞，避免被曲解。']],
+['刺杀疑云',['请{n}保护关键证人，防止线索断绝。','让{n}复核物证，不让错误指向定案。','由{n}布置反查，寻找真正获利者。']],
+['军费争执',['请{n}核对军费明细，先找出实际缺口。','让{n}召集双方列出轻重缓急。','由{n}提出分期拨付方案，避免争执拖延。']],
+['盟约续签',['请{n}列明双方履约情况，再谈续约条件。','让{n}探查民间对盟约的真实态度。','由{n}拟定短期续约，保留复议空间。']],
+['伪造文书',['请{n}封存原件并核验印信。','让{n}追查文书传递的每一站。','由{n}通知相关军营复核命令。']],
+['新政受阻',['请{n}收集百姓的具体难处，调整执行细则。','让{n}公开试行数据，回应质疑。','由{n}召开听证，让反对者说明顾虑。']],
+['站队请求',['请{n}核实请求背后的利害关系。','让{n}替你传达需要公开讨论的立场。','由{n}准备中立方案，避免仓促结盟。']],
+['城防空隙',['请{n}立即补足薄弱岗哨。','让{n}复查值守名册与交接记录。','由{n}安排假巡逻，迷惑可能的探子。']],
+love:[
+['倾听陪伴',['请{n}陪你去找人，先听他把误会说完。','让{n}留在驿站准备热食与干衣。','由{n}向熟人打听去向，避免盲目寻找。']],
+['关系调解',['请{n}分别听取双方说法。','让{n}找出能让两人合作的小事。','由{n}安排私下交谈，避开旁人目光。']],
+['流言核验',['请{n}查清流言来源。','让{n}递出真实经过，给对方判断机会。','由{n}约出当事人，把误会当面说开。']],
+['情绪安抚',['请{n}陪在身边，不急着追问。','让{n}替对方挡开围观者。','由{n}送去药食与一句恰当的问候。']],
+['救助协作',['请{n}寻找替代资源，尽量两边都救。','让{n}联系愿意帮忙的人共同分担。','由{n}陪当事人说明选择的缘由。']],
+['队伍协作',['请{n}重新分配行囊与守夜任务。','让{n}安排短暂休整，听取大家难处。','由{n}用热食和清单恢复秩序。']],
+['故乡消息',['请{n}核实消息真伪。','让{n}帮忙写一封能送出的家书。','由{n}安排可靠的人继续打听。']],
+['冷战修复',['请{n}转达对方真正的担忧。','让{n}先安抚较激动的一方。','由{n}约两人共同完成一件小事。']],
+['走散危机',['请{n}上前解围并带人离开。','让{n}去找巡防协助。','由{n}观察陌生人的动机与去向。']],
+['珍贵旧物',['请{n}提醒你珍重收下，等待对方愿意说明。','让{n}准备合适回礼表达谢意。','由{n}查清旧物来历，避免误解。']],
+['病中牵挂',['请{n}留下照料，重新安排路程。','让{n}安抚队伍，说明暂停缘由。','由{n}寻找附近医者确认病情。']],
+['信任危机',['请{n}递交完整证据说明经过。','让{n}追查流言源头。','由{n}安排私下见面，给彼此解释机会。']],
+['危局守护',['请{n}补上侧翼，守住撤离路线。','让{n}传递信号，维持彼此照应。','由{n}准备马匹与伤药接应。']],
+['坦露恐惧',['请{n}安静倾听，不急着给答案。','让{n}分享相似经历，减轻孤立感。','由{n}和对方商量明日能解决的小事。']],
+['临别约定',['请{n}约定明确的重逢地点。','让{n}送上可辨认的信物。','由{n}安排可靠的传信路线。']],
+['少年失误',['请{n}陪少年说明经过并承担责任。','让{n}先安置少年，再找修补办法。','由{n}联系家人，避免他们担忧。']],
+['沉默过去',['请{n}尊重沉默，只在需要时帮助。','让{n}确认是否存在实际危险。','由{n}邀请对方参与小事，慢慢建立信任。']],
+['承诺冲突',['请{n}列清两边代价，让当事人决定。','让{n}寻找兼顾两处的替代路径。','由{n}先安抚被牵连的人。']],
+['暗中相助',['请{n}查明经过后郑重致谢。','让{n}帮你准备补救方案，共担后果。','由{n}提醒你尊重对方不愿张扬的心意。']],
+['真心夜谈',['请{n}主持不谈功过的夜谈。','让{n}记录大家的约定。','由{n}安排简单送别宴，为同行收尾。']],
+money:[
+['粮价波动',['请{n}核查粮仓余量，分批平价放粮。','让{n}与米商议定限价并公开存粮。','由{n}组织粥棚，先保障最缺粮的街区。']],
+['商路风险',['请{n}勘察路线和成本，再决定是否通行。','让{n}联络沿途商号，建立互保报讯。','由{n}谈定合理税率，堵住暗中收费。']],
+['赈银缺口',['请{n}封存账册逐笔追查。','让{n}核验领取名册，找出银两流向。','由{n}公开补救计划，避免恐慌。']],
+['富商出资',['请{n}重谈过路费上限，保障百姓通行。','让{n}测算成本，提出官商共担。','由{n}寻访其他出资者，避免垄断。']],
+['物资延误',['请{n}调集附近库存，先保伤兵与守城者。','让{n}规划分段转运，减少单线风险。','由{n}与商队谈定加急运费和期限。']],
+['关外货物',['请{n}核验货单并担保放行。','让{n}调拨替代物资，分散风险。','由{n}同关吏谈判，拒绝额外勒索。']],
+['大集秩序',['请{n}公布规费并设置巡查。','让{n}组织商户联名登记异常。','由{n}安排救济摊位，避免穷人被驱赶。']],
+['矿山归属',['请{n}查验旧界碑与契书。','让{n}提出两县分成的过渡方案。','由{n}先暂停开采，避免抢占冲突。']],
+['工坊停工',['请{n}核算欠薪，优先发生活钱。','让{n}协调订单预付款，尽快复工。','由{n}开设短期公工，稳定收入。']],
+['私粮仓',['请{n}核实归属与灾情，再请示调拨。','让{n}安排见证开仓登记。','由{n}拟定借粮文书，明确归还。']],
+['河道淤塞',['请{n}测算受灾人口，优先修险段。','让{n}公开工程预算，防止侵吞。','由{n}动员乡里出工并发粮补贴。']],
+['灾民安置',['请{n}登记人口，避免重复领粮。','让{n}联系善堂商号，共建救济账目。','由{n}安排以工代赈，给劳力收入。']],
+['高利契约',['请{n}逐条修改，删去不公平抵押。','让{n}寻找替代资金，避免受制钱庄。','由{n}公开风险说明，让合伙人共决。']],
+['税务清查',['请{n}补齐合法凭证，主动配合清查。','让{n}区分偷漏与疏失，分别处理。','由{n}建议限期自查补缴，减少误伤。']],
+['船队风浪',['请{n}先救落水者，再尽力打捞货物。','让{n}指挥分船减载，争取人货两全。','由{n}清点保险损失，安抚商户。']],
+['秘密商道',['请{n}查清货物去向，拒绝战乱暴利。','让{n}提出只通民用货物的协议。','由{n}寻找正规商路优惠替代。']],
+['药材短缺',['请{n}协调限价并补贴急需药材。','让{n}追查囤货来源，阻止牟利。','由{n}发动采集与替代配方。']],
+['两处资助',['请{n}公开比较紧急程度。','让{n}拆分资金并发动募捐。','由{n}设计分期资助，先补急缺。']],
+['火灾重建',['请{n}建立低息周转金，助小店复业。','让{n}组织共购材料，降低成本。','由{n}核实受灾名单，防止冒领。']],
+['新税令',['请{n}建议灾区减免、奢侈征税。','让{n}核算不同税率，避免压垮小商户。','由{n}设置期限复核，防止苛政。']]
+};
 function buildGame(){let mine=room.players.find(x=>x.id===session.playerId),p=mine.points,assistants=mine.assistants.map(i=>({id:i,name:NPCS[i][0]}));game={queue:[],index:0,affection:{},loyalty:{},assistants};['power','love','money'].forEach(line=>shuffled(GENERIC_BANK[line].map((text,taskIndex)=>({text,taskIndex})),room.code+line).slice(0,p[line]).forEach(item=>game.queue.push({line,...item})));eventPage()}
-function eventOption(line,name,index,taskIndex){let pattern=OPTION_VARIANTS[line][taskIndex%OPTION_VARIANTS[line].length][index];return pattern.replaceAll('{n}',name)}
-function eventPage(){let item=game.queue[game.index];if(!item)return finishGame();let {line,text,taskIndex}=item,labels={power:'权谋支线',love:'情感支线',money:'金钱支线'},dimensions=DIMENSION_LABELS[line],options=game.assistants.map((n,i)=>eventOption(line,n.name,i,taskIndex));shell(`<section class="stage event-layout"><div class="progress">${game.queue.map((x,i)=>`<i class="${i<game.index?'done':''} ${x.line===line?'active':''}"></i>`).join('')}</div><div class="event-type">${labels[line]} · ${game.index+1} / ${game.queue.length}</div><article class="event-card"><p class="section-kicker">考察维度：${dimensions[taskIndex%dimensions.length]}</p><h2>${text}</h2>${options.map((c,i)=>`<button class="choice" data-choice="${i}"><b>${'ABC'[i]}</b>${c}</button>`).join('')}<div class="impact" id="impact"></div></article></section>`,'卷四 · 抉择');document.querySelectorAll('[data-choice]').forEach(b=>b.onclick=async()=>{let index=+b.dataset.choice,n=game.assistants[index],t=n.name,[a,l]=relationshipDelta(line,t,taskIndex);game.affection[t]=(game.affection[t]||0)+a;game.loyalty[t]=(game.loyalty[t]||0)+l;document.querySelector('#impact').textContent=`${t}：好感 ${a>0?'+':''}${a}，忠诚 ${l>0?'+':''}${l}`;await api('/api/answer',{...session,answer:{line,target:t,index,taskIndex},affection:game.affection,loyalty:game.loyalty});game.index++;setTimeout(eventPage,500)})}
+function eventOption(line,name,index,taskIndex){return EVENT_OPTIONS[line][taskIndex][1][index].replaceAll('{n}',name)}
+function eventPage(){let item=game.queue[game.index];if(!item)return finishGame();let {line,text,taskIndex}=item,labels={power:'权谋支线',love:'情感支线',money:'金钱支线'},event=EVENT_OPTIONS[line][taskIndex],options=game.assistants.map((n,i)=>eventOption(line,n.name,i,taskIndex));shell(`<section class="stage event-layout"><div class="progress">${game.queue.map((x,i)=>`<i class="${i<game.index?'done':''} ${x.line===line?'active':''}"></i>`).join('')}</div><div class="event-type">${labels[line]} · ${game.index+1} / ${game.queue.length}</div><article class="event-card"><p class="section-kicker">考察维度：${event[0]}</p><h2>${text}</h2>${options.map((c,i)=>`<button class="choice" data-choice="${i}"><b>${'ABC'[i]}</b>${c}</button>`).join('')}<div class="impact" id="impact"></div></article></section>`,'卷四 · 抉择');document.querySelectorAll('[data-choice]').forEach(b=>b.onclick=async()=>{let index=+b.dataset.choice,n=game.assistants[index],t=n.name,[a,l]=relationshipDelta(line,t,taskIndex);game.affection[t]=(game.affection[t]||0)+a;game.loyalty[t]=(game.loyalty[t]||0)+l;document.querySelector('#impact').textContent=`${t}：好感 ${a>0?'+':''}${a}，忠诚 ${l>0?'+':''}${l}`;await api('/api/answer',{...session,answer:{line,target:t,index,taskIndex},affection:game.affection,loyalty:game.loyalty});game.index++;setTimeout(eventPage,500)})}
 async function finishGame(){await api('/api/finish',session);game.queue=[];await refresh()}
 function relationship(player,name){let a=player.affection?.[name]||0,l=player.loyalty?.[name]||0;if(a>=100&&l>=100)return '命定同盟';if(a>=100)return '情深不渝';if(l>=100)return '生死追随';if(a>=80&&l>=80)return '生死羁绊';if(a>=80)return '倾心相守';if(l>=80)return '誓约追随';if(a>=60&&l>=60)return '肝胆相照';if(a>=60)return '心意相通';if(l>=60)return '忠诚同袍';if(a>=45||l>=45)return '并肩知己';if(a>=20||l>=20)return '可靠伙伴';return '同行助力'}
 function relationTotal(player){return (player.assistants||[]).reduce((sum,i)=>{let n=NPCS[i][0];return sum+(player.affection?.[n]||0)+(player.loyalty?.[n]||0)},0)}
