@@ -1,0 +1,9 @@
+name: dream-chronicle
+content: .
+services:
+  web:
+    path: .
+    runtime: Nodejs18
+    installCommand: npm install --production
+    buildCommand: npm install --production
+    entrypoint: node server.js
